@@ -1,14 +1,29 @@
 https://github.com/hctsaie/pwnwiki.github.io/tree/master/persistence/multi
+https://github.com/pwnwiki/pwnwiki.github.io/tree/master/persistence/multi 
 
-http://www.michaelboman.org/books/penetration-testing-notes/netcat http://www.michaelboman.org/books/sql-injection-cheat-sheet-oracle
+http://www.michaelboman.org/books/penetration-testing-notes/netcat 
+http://www.michaelboman.org/books/sql-injection-cheat-sheet-oracle
 
 https://www.esecforte.com/advanced-traffic-pivoting-with-netcat/
+Background –
+Many a times during a pentest, I need to access machines on an internal network that are not reachable from outside, since they lie in the private ip space. So the solution is to setup the previously 0wned box on the DMZ to pivot traffic to these internal hosts.
+By now, you must be saying to yourself, that’s ancient stuff, it’s been documented for ages how port forwards can be done with netcat, there’s nothing new in that!
+Well, here I would like to point out that you most likely would have used backpipes in linux to bi-directionally port forward traffic using netcat, which also involves using mknod and tee.
+I’ll show you a quick example here
 
-https://github.com/pwnwiki/pwnwiki.github.io/tree/master/persistence/multi http://www.sans.org/security-resources/sec560/netcat_cheat_sheet_v1.pdf
+$ mknod backpipe p
+$ nc -l -p 80 0backpipe
+THAT works in *nix, but what happens when you need to perform the same thing on a windows box ???
 
-http://resources.infosecinstitute.com/netcat-uses/#gref Reverse Shell Netcat can also be used to push a client session from the client to the server. This technique is called a reverse shell.
 
-Relay Netcat can be configured to bounce an attack from machine to machine. For Windows, it requires a relay.bat containing nc -e inside.
+http://www.sans.org/security-resources/sec560/netcat_cheat_sheet_v1.pdf
+
+http://resources.infosecinstitute.com/netcat-uses/#gref 
+Reverse Shell:
+Netcat can also be used to push a client session from the client to the server. This technique is called a reverse shell.
+
+Relay:
+Netcat can be configured to bounce an attack from machine to machine. For Windows, it requires a relay.bat containing nc -e inside.
 
 https://github.com/diegocr/netcat
 
