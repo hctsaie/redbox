@@ -30,5 +30,8 @@ https://github.com/diegocr/netcat
 https://eternallybored.org/misc/netcat/
 
 https://www.cise.ufl.edu/class/cis4204fa16/Units/Unit26-PivotingWithNetcat.pdf
+If we can communicate with a host that can communicate with the server, we can communicate with the server. (We can achieve communication transitivity with netcat.)
+If it's available to a compromised host with which I can communicate, netcat comes to the rescue.
+(如果可以通過一個受感染的主機與我進行通信，那麼netcat就可以救援。)
 
 http://www.admin-magazine.com/Articles/Pen-Testing-with-netcat
