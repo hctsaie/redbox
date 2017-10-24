@@ -1,0 +1,15 @@
+Enable Windows Remote Desktop remotely
+Ok, you have got an cmd.exe prompt on a Windows 2003 Server and you would like to use Remote Desktop to access it - the problem is that Remote Desktop is not enabled on the system. If you have the Administrator password and running Windows you could try to follow the instructions at www.windowsdevcenter.com, else continue reading...
+
+Create a file (example: EnableRemoteDesktop.reg) with the following text (tip: you can use "copy con" to create the file):
+
+Windows Registry Editor Version 5.00
+[HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server]
+"fDenyTSConnections"=dword:00000000
+Then import it with regedit:
+
+REGEDIT /S EnableRemoteDesktop.reg
+After which you need to restart the server to have it take effect:
+
+SHUTDOWN -r -t 01
+That's it - you can now login to the server using rDesktop. That is of course if the firewall doesn't stop you. I'll save that problem for another day.
