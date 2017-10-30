@@ -33,3 +33,6 @@ https://artkond.com/2017/03/23/pivoting-guide/
 
 
 https://www.seceye.cn/821.html
+
+https://blog.cobaltstrike.com/2016/06/01/howto-port-forwards-through-a-socks-proxy/
+default sock port 1080
