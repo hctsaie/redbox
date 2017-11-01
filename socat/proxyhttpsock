@@ -55,18 +55,26 @@ http://www.cnblogs.com/shangdawei/p/3843039.html
 
 不加reuseaddr,fork是无法成功连接的，具体原因大家可以再百度下，有详细介绍。
 
+
 =====================================
 https://trent.utfs.org/wiki/Proxy
 Socat
-Socat can not act[2] as a proxy, but only talk to a proxy server. For example, a SOCKS proxy:
+Socat can talk to a proxy server. For example, a SOCKS proxy:
+先建立ssh tunnel, 以localhost:8080listen, 並forward to remote.domain.com. 這是一個SOCK4/5 Proxy.
+
 ssh -NC -D 127.0.0.1:8080 bob@remote.domain.com
+
 This will open a SOCKS4/SOCKS5 proxy on :8080 where a browser can connect to. Also, socat can talk to this proxy, but it cannot know the destination to connect to. In this example we're using dest.example.com:
+把ssh tunnel當一個proxy, 並用socat連上它. 實際上, 是透過這一個ssh tunnel建構而成的Sock Proxy連到remote.domain.com主機, 透過那主機 去連上目的地的web - dest.example.com:80. Local端, 則用browser直接連localhost:1234, 對應的會是dest.example.com:80的結果.
 
 socat TCP-LISTEN:1234,fork SOCKS4:127.0.0.1:dest.example.com:80,socksport=8080
+
 Now a browser can connect to :1234 (socat) which will in turn connect to :8080 (ssh) which will in turn direct traffic to remote.domain.com to fetch content from dest.example.com.
+
 
 =====================================
 如果,socat fork出的proxy是http proxy type, 那socat的tcp-listen本身也會是http proxy type
+
 
 =====================================
 socat READLINE,noecho='[Pp]assword:' EXEC:'ftp ftp.server.com',pty,setsid,ctty
@@ -78,3 +86,7 @@ socat TCP4-LISTEN:2022,reuseaddr,fork PROXY:proxy:www.domain.org:22,proxyport=31
 starts a forwarder that accepts connections on port 2022, and directs them through the proxy daemon listening on port 3128 (proxyport) on host proxy, using the CONNECT method, where they are authenticated as "user" with "pass" (proxyauth). The proxy should establish connections to host www.domain.org on port 22 then.
 
 socat TCP4-LISTEN:3389,fork SOCKS4:127.0.0.1:192.168.1.100:3389,socksport=9999
+
+
+============================================
+Build a sock proxy for IRM
