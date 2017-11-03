@@ -20,3 +20,23 @@ http://souptonuts.sourceforge.net/sshtips.htm
 http://jamyy.us.to/blog/2006/01/186.html
 https://www.math.ucla.edu/computing/kb/creating-ssh-proxy-tunnel-putty
 http://chimerhapsody.blogspot.tw/2015/09/ssh.html
+
+GOOD Explansion - http://chimerhapsody.blogspot.tw/2015/09/ssh.html
+GOOD Explansion - https://calomel.org/firefox_ssh_proxy.html
+Good - https://blog.devolutions.net/2017/04/how-to-configure-an-ssh-tunnel-on-putty.html
+
+
+http://www.ubuntu-tw.org/modules/newbb/viewtopic.php?viewmode=compact&topic_id=17538
+
+http://taiwanwolf.blogspot.tw/2008/11/ssh-tunnel-firefox-foxy-proxy.html
+
+Persvr21
+XXXXXX$
+
+EA
+10.42.252.153
+
+vh
+10.210.57.219
+
+socat -t wait
