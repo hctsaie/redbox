@@ -40,3 +40,33 @@ vh
 10.210.57.219
 
 socat -t wait
+timeout, t, T, 似乎不能用在connect.
+只能用batch job, 特定時間, 定期起?
+
+socat sock proxy是路?
+
+Strong Tool
+https://mobaxterm.mobatek.net/download-home-edition.html
+
+https://medium.com/@DefCon_007/ssh-to-a-remote-server-from-proxy-restricted-network-4845f094b58a
+
+http://meinit.nl/using-putty-and-an-http-proxy-to-ssh-anywhere-through-firewalls
+can not just use http proxy in putty for ssh. The proxy may still forbidd the 22 connection to outside
+
+Good https://daniel.haxx.se/docs/sshproxy.html
+可以在外部以443開sshd, 在同一台啟動appd as http proxy
+內部開ssh去listen一個port, 再連到外部443, 並指定由外部localhost http proxy out
+內部開browser with ssh listen的port當proxy
+SSH Through or Over Proxy
+In today's cruel networked world, we're too often hampered behind (evil) company proxies that restricts how we can use the internet while at work, at a customers' place or even in some cases while at home or at friends'.
+
+Not only do proxies restrict what you can do, what protocols that are accepted, what sites you can visit and what TCP ports that are let through, it also allows your company or friend to log and supervise you.
+
+Note that even when you use HTTPS through the proxy, the server name is exposed so a logging proxy will see what HTTPS servers you connect to.
+
+I'll show you some easy steps that help you circumvent the boundaries of most proxy setups, and that also will bring you more freedom and prevent peeking eyes to investigate your browsing habits!
+
+
+http://www.linuxhowtos.org/Security/sshproxy.htm
+利用ssh, 用corkcrew轉call proxy out
+
