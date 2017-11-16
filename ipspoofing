@@ -1,0 +1,38 @@
+https://www.symantec.com/zh/tw/security_response/glossary/define.jsp?letter=i&word=ip-spoofing
+
+IP spoofing (IP 詐騙)
+一種涉及已建立的使用中階段作業被他人攔截和加入的攻擊。IP 詐騙也是一種攻擊方法，該方法使用偽造的來源位址來傳送 IP 封包，此類封包可能會採用受信任來源的 IP 位址來嘗試規避防火牆。這將使防火牆誤以為來自駭客的封包確實是來自受信任來源的。IP 詐騙也可以僅用於隱藏攻擊的真實來源。
+IP 詐騙是入侵者使用其他電腦的 IP 位址來取得資訊或存取權限的程序。由於入侵者偽裝成他人出現，因此如果傳送回覆，該回覆將發往入侵者所偽造的位址，而非其入侵者的位址。
+
+
+https://books.google.com.tw/books?id=AO2fsAPVC34C&pg=PA251&lpg=PA251&dq=IP+spoofing&source=bl&ots=LhSv4ddSD7&sig=MY6cYzMDTH1-pWsEi8FD0-zyQ8o&hl=zh-TW&sa=X&ved=0ahUKEwj-4Iv4gcLXAhUHFZQKHeSDBKw4FBDoAQhaMAg#v=onepage&q=IP%20spoofing&f=false
+
+
+http://bakubu.888bbs.tw/t242-topic
+
+在 Internet 上，IP 偽裝（注意，是偽裝而不是假冒）乃是稀鬆平常的事。比如說，大部份的公司內部網路應該都是使用像是 192.168.1.x 之類的虛擬 IP，但虛擬 IP 可上不了 Internet！所以為了連上 Internet，進行 IP 偽裝乃是免不了的事，而此時您會偽裝成公司網路對外連線所使用的 IP。
+在家裡，如果是透過像是 Wireless Router 或是 IP 分享器來連接 Internet 的話，那麼您十之八九是以 IP 偽裝的方式連接上 Internet 的！雖然使用者可能根本不曉得這回事。而此時您會偽裝成您的對外連線，如 ADSL，所使用的 IP。
+
+http://xyz.cinc.biz/2013/04/php-curl-client-ip.html
+
+
+http://linux.vbird.org/problem/linux/problem_1.php
+
+實體 IP：在網路的世界裡，為了要辨識每一部電腦的位置，因此有了電腦 IP 位址的定義。一個 IP 就好似一個門牌！例如，你要去微軟的網站的話，就要去『 207.46.197.101 』這個 IP 位置！這些可以直接在網際網路上溝通的 IP 就被稱為『實體 IP 』了。
+------- 
+虛擬 IP：不過，眾所皆知的，IP 位址僅為 xxx.xxx.xxx.xxx 的資料型態，其中， xxx 為 1-255 間的整數，由於近來電腦的成長速度太快，實體的 IP 已經有點不足了，好在早在規劃 IP 時就已經預留了三個網段的 IP 做為內部網域的虛擬 IP 之用。這三個預留的 IP 的網段分別為：
+A Class：10.0.0.0 - 10.255.255.255 
+B Class：172.16.0.0 - 172.31.255.255 
+C Class：192.168.0.0 - 192.168.255.255
+不過，由於是虛擬 IP ，所以當您使用這些地址的時候，當然是有所限制的，限制如下：
+私有位址的路由資訊不能對外散播
+使用私有位址作為來源或目的地址的封包，不能透過Internet來轉送
+關於私有位址的參考紀錄(如DNS)，只能限于內部網路使用
+由以上的限制我們可以知道，虛擬 IP 僅能使用於內部網路（或者說是區域網路內），而無法直接與外部的 Internet 進行資料的流通。如果需要連上 Internet 時，就必須要使用一部具有 NAT 功能的主機（或者是 IP 分享器）來作為封包溝通的轉換站了。
+
+
+https://tw.answers.yahoo.com/question/index?qid=20130804000015KK03103
+世界上所有的IP，其實都是有授權，都有主人的!!!所以所謂的 假IP ??沒有這回事情!!只有 偽裝別人IP，沒有假IP這回事..以 IPv4 來說~~0.0.0.0 ~ 255.255.255.255通通都有作用，也通通都有所隸屬的主人~沒有一個是假的，只有虛擬IP，所謂的 虛擬IP，其實在國際IP上，就是所謂的空號，這些虛擬IP，是國際上協商好的空號，這些空號，不可能成為真實IP，而虛擬IP，則是應用在內網上面，A 級網路：10.0.0.0 – 10.255.255.255 
+A 級網路：256 * 256 * 256 個空IP可以使用B 級網路：172.16.0.0 – 172.31.255.255 
+B 級網路：16 * 256 * 256 個空IP可以使用C 級網路：192.168.0.0 – 192.168.255.255 
+C 級網路：256 * 256 個空IP可以使用都是虛擬IP~回應您開頭問的，我要變成我指定的假ip，而不是代理伺服器隨機的ip，除非您所謂的這個假IP，是在您的管轄控制內，否則做不到..只能使用 proxy server 來做解決，也就是現在所謂的 代理伺服器IP，您有指定的IP控制權，可以讓這個IP成為 Router，甚至 VPN Server，就可以達到您所要求的，您如果沒有這個指定IP控制權，不論是 Linux 或者 Windows 都辦不到~如果您有這個指定IP控制權，Linux、Windows 都可以做.. 
